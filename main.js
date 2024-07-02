@@ -219,6 +219,8 @@ ball.addEventListener('scored', (e) => {
 	const playerMesh = e.message === 'player1' ? player1Mesh : player2Mesh
 	const geometry = getScoreGeometry(score[e.message]);
 	playerMesh.geometry = geometry;
+	playerPaddle.mesh.position.set(0,0,15);
+	playerPaddle2.mesh.position.set(0,0,-15);
 	console.log(score)
 })
 
