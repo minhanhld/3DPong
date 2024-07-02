@@ -28,6 +28,9 @@ export default class Paddle {
 		this.mesh.add(this.collisionMesh);
 		this.scene.add(this.mesh);
 		this.length = this.geometry.parameters.height;
+
+		this.arrowUp = false;
+		this.arrowDown = false;
 	}
 
 	setX(new_x)

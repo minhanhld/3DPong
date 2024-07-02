@@ -23,7 +23,6 @@ renderer.shadowMap.type = THREE.VSMShadowMap;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const cursor = new THREE.Vector2(0,0);
 const raycaster = new THREE.Raycaster();
 //scene.background = new THREE.Color(0xff99ff)
 // FOG scene.fog = new THREE.Fog(0xff99ff, 90, 120)
@@ -171,6 +170,36 @@ scene.add(rightWall);
 const playerPaddle = new PaddleRectangular(scene, boundaries, new THREE.Vector3(0, 0, 15))
 const playerPaddle2 = new PaddleRectangular(scene, boundaries, new THREE.Vector3(0, 0, -15))
 
+var xSpeed = 1.5;
+
+document.addEventListener("keydown", onDocumentKeyDown, false);
+function onDocumentKeyDown(event) {
+    var keyCode = event.which;
+    if (keyCode == 38) {
+        playerPaddle.arrowUp = true;
+    } else if (keyCode == 40) {
+        playerPaddle.arrowDown = true;
+    } else if (keyCode == 87) {
+		playerPaddle2.arrowUp = true;
+	} else if (keyCode == 83) {
+		playerPaddle2.arrowDown = true;
+	}
+};
+
+document.addEventListener("keyup", onDocumentKeyUp, false);
+function onDocumentKeyUp(event) {
+    var keyCode = event.which;
+    if (keyCode == 38) {
+        playerPaddle.arrowUp = false;
+    } else if (keyCode == 40) {
+        playerPaddle.arrowDown = false;
+    } else if (keyCode == 87) {
+		playerPaddle2.arrowUp = false;
+	} else if (keyCode == 83) {
+		playerPaddle2.arrowDown = false;
+	}
+};
+
 const addLEDLightToPaddle = (paddle) => {
     const ledColor = 0x00b4d8;
     const pointLight = new THREE.PointLight(ledColor, 35, 1000);
@@ -193,105 +222,12 @@ ball.addEventListener('scored', (e) => {
 	console.log(score)
 })
 
-// function createParticleEffect(position) {
-// 	const particleCount = 20;
-//     const particles = new THREE.Group();
-
-//     const particleTexture = new THREE.TextureLoader().load('path/to/particle_texture.png');
-//     const particleMaterial = new THREE.PointsMaterial({
-//         //map: particleTexture,
-//         color: 0x00ffff,
-//         size: 1,
-//         blending: THREE.AdditiveBlending,
-//         transparent: true,
-//         depthWrite: false
-//     });
-
-//     const particleGeometry = new THREE.BufferGeometry();
-//     const particlePositions = new Float32Array(particleCount * 3);
-
-//     for (let i = 0; i < particleCount; i++) {
-//         const x = position.x + Math.random() * 6 - 5;
-//         const y = position.y + Math.random() * 6 - 5;
-//         const z = position.z + Math.random() * 6 - 5;
-//         particlePositions[i * 3] = x;
-//         particlePositions[i * 3 + 1] = y;
-//         particlePositions[i * 3 + 2] = z;
-//     }
-
-//     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-
-//     const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-//     particles.add(particleSystem);
-
-//     scene.add(particles);
-
-//     setTimeout(() => {
-//         scene.remove(particles);
-//     }, 500); // Remove particles after 0.5 seconds
-// }
-
-// Event listener for ball collisions
-// ball.addEventListener('collision', (event) => {
-//     createParticleEffect(event.position);
-// });
-
 const clock = new THREE.Clock();
 
-window.addEventListener('mousemove', function(event)
-{
-	cursor.x = 2 * (event.clientX / window.innerWidth) - 1
-	cursor.y = -2 * (event.clientY / window.innerHeight) + 1}
-)
 
 /**
  * test
  **/
-
-function createParticleTrail(position, color) {
-    const trailCount = 20; // Number of particles in the trail
-    const trailParticles = new THREE.Group();
-    const previousPosition = new THREE.Vector3(); // Store the previous position of the paddle
-    previousPosition.copy(position);
-
-    // Define particle material with the desired color and fading opacity
-    const particleMaterial = new THREE.PointsMaterial({
-        color: color,
-        size: 0.15,
-        transparent: true,
-        opacity: 1.0 // Initial opacity
-    });
-
-    // Create particle geometry and set positions based on current and previous positions
-    const particleGeometry = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(trailCount * 3);
-    const fadeOutFactor = 1.0 / trailCount; // Adjust the fade-out speed
-
-    for (let i = 0; i < trailCount; i++) {
-        const progress = i / (trailCount - 1); // Calculate progress from 0 to 1
-        const interpolatedPosition = new THREE.Vector3().lerpVectors(previousPosition, position, progress);
-
-        particlePositions[i * 3] = interpolatedPosition.x;
-        particlePositions[i * 3 + 1] = interpolatedPosition.y;
-        particlePositions[i * 3 + 2] = interpolatedPosition.z;
-    }
-
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-
-    // Create particle system and add to the scene
-    const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-    trailParticles.add(particleSystem);
-    scene.add(trailParticles);
-
-    // Gradually decrease opacity of particles over time to simulate fading out
-    const fadeOutInterval = setInterval(() => {
-        particleMaterial.opacity -= fadeOutFactor; // Decrease opacity by fadeOutFactor
-        if (particleMaterial.opacity <= 0) {
-            clearInterval(fadeOutInterval);
-            scene.remove(trailParticles);
-        }
-    }, 1); // Adjust the interval for smoother or faster fading
-}
 
 function createTrailingLine(position, color) {
     // Initialize previous position if it's not already defined
@@ -334,23 +270,19 @@ function animate(){
 	requestAnimationFrame(animate);
 
 		const deltaTime = clock.getDelta();
-		raycaster.setFromCamera(cursor, camera);
-		const[intersection] = raycaster.intersectObject(plane);
-		const subDeltaTime = deltaTime / STEPS;
-		if (intersection)
-		{
-			const nextX = intersection.point.x;
-			const prevX = playerPaddle.mesh.position.x;
-			playerPaddle.setX(THREE.MathUtils.lerp(prevX, nextX, 0.1));
-		}
+		if (playerPaddle.arrowUp)
+			playerPaddle.setX(playerPaddle.mesh.position.x + 1);
+		if (playerPaddle.arrowDown)
+			playerPaddle.setX(playerPaddle.mesh.position.x - 1);
+		if (playerPaddle2.arrowUp)
+			playerPaddle2.setX(playerPaddle2.mesh.position.x + 1);
+		if (playerPaddle2.arrowDown)
+			playerPaddle2.setX(playerPaddle2.mesh.position.x - 1);
 		ball.update(deltaTime);
-		playerPaddle2.setX(ball.mesh.position.x);
+		//playerPaddle2.setX(ball.mesh.position.x);
 		createTrailingLine(playerPaddle.mesh.position, 0xfffff)
 		//createTrailingLine(playerPaddle2.mesh.position, 0xfffff)
-		//createParticleTrail(playerPaddle.mesh.position, 0xfffff)
 		renderer.render(scene, camera);
 }
-
-
 
 animate();

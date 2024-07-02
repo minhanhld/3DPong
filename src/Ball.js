@@ -7,7 +7,7 @@ let hidden = false;
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
 		hidden = true;
-    } else {
+    } else if (!document.hidden){
 		hidden = false;
     }
 });
